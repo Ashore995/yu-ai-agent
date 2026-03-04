@@ -3,13 +3,17 @@ package com.lirui.yuaiagent.app;
 import com.lirui.yuaiagent.advisor.MyLoggerAdvisor;
 import com.lirui.yuaiagent.advisor.ReReadingAdvisor;
 import com.lirui.yuaiagent.chatmemory.FileBasedChatMemory;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor;
+import org.springframework.ai.chat.client.advisor.api.Advisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.InMemoryChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -38,9 +42,8 @@ public class LoveApp {
                 .defaultSystem(SYSTEM_PROMPT)
                 .defaultAdvisors(
                         new MessageChatMemoryAdvisor(chatMemory),
-                        // 自定义日志 Advisor，可按需开启
                         new MyLoggerAdvisor()
-                        // 自定义推理增强 Advisor，可按需开启，代价是token会变多
+                        // 自定义推理增强 Advisor，可按需开启，代价是 token 会变多
                         //new ReReadingAdvisor()
                 )
                 .build();
@@ -55,7 +58,7 @@ public class LoveApp {
                 .call()
                 .chatResponse();
         String content = response.getResult().getOutput().getText();
-        log.info("content: {}", content);
+        log.info("普通聊天回答：{}", content);
         return content;
     }
 
@@ -76,7 +79,26 @@ public class LoveApp {
         return loveReport;
     }
 
+    @Resource
+    private VectorStore loveAppVectorStore;
 
+    @Resource
+    private Advisor loveAppRagCloudAdvisor;
 
+    public String doChatWithRag(String message, String chatId) {
+        ChatResponse chatResponse = chatClient
+                .prompt()
+                .user(message)
+                .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
+                        .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
+                // 应用知识库问答
+                //.advisors(new QuestionAnswerAdvisor(loveAppVectorStore))
+                // 应用增强检索服务（云知识库服务）
+                .advisors(loveAppRagCloudAdvisor)
+                .call()
+                .chatResponse();
+        String content = chatResponse.getResult().getOutput().getText();
+        return content;
+    }
 
 }

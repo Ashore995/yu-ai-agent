@@ -1,4 +1,4 @@
-package com.lirui.yuaiagent.demo.invoke;
+/*package com.lirui.yuaiagent.demo.invoke;
 
 import jakarta.annotation.Resource;
 import org.springframework.ai.chat.messages.AssistantMessage;
@@ -21,4 +21,4 @@ public class SpringAiAiInvoke implements CommandLineRunner {
                 .getOutput();
         System.out.println(output.getText());
     }
-}
+}*/
