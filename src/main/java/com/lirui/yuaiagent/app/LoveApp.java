@@ -3,6 +3,8 @@ package com.lirui.yuaiagent.app;
 import com.lirui.yuaiagent.advisor.MyLoggerAdvisor;
 import com.lirui.yuaiagent.advisor.ReReadingAdvisor;
 import com.lirui.yuaiagent.chatmemory.FileBasedChatMemory;
+import com.lirui.yuaiagent.rag.LoveAppRagCustomAdvisorFactory;
+import com.lirui.yuaiagent.rag.QueryRewriter;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -81,20 +83,30 @@ public class LoveApp {
 
     @Resource
     private VectorStore loveAppVectorStore;
-
     @Resource
     private Advisor loveAppRagCloudAdvisor;
+//    @Resource
+//    private VectorStore pgVectorVectorStore;
+    @Resource
+    private QueryRewriter queryRewriter;
+
 
     public String doChatWithRag(String message, String chatId) {
+        String rewrittenMessage = queryRewriter.doQueryRewrite(message);
         ChatResponse chatResponse = chatClient
                 .prompt()
-                .user(message)
+                .user(rewrittenMessage)
                 .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
                         .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
-                // 应用知识库问答
+                // 应用知识库问答(内存)
                 //.advisors(new QuestionAnswerAdvisor(loveAppVectorStore))
                 // 应用增强检索服务（云知识库服务）
-                .advisors(loveAppRagCloudAdvisor)
+                //.advisors(loveAppRagCloudAdvisor)
+                // 应用增强检索服务（阿里云 PGVector）
+                //.advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))
+                .advisors(LoveAppRagCustomAdvisorFactory.createLoveAppRagCustomAdvisor(
+                        loveAppVectorStore, "单身"
+                ))
                 .call()
                 .chatResponse();
         String content = chatResponse.getResult().getOutput().getText();
