@@ -12,7 +12,7 @@ import java.util.List;
 
 
 /*
-* 本地RAG想粮库配置
+* 本地RAG向量数据库配置
 * */
 @Configuration
 public class LoveAppVectorStoreConfig {
