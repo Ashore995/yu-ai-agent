@@ -73,7 +73,9 @@ public abstract class BaseAgent {
                 results.add(result);  
             }  
             // 检查是否超出步骤限制  
-            if (currentStep >= maxSteps) {  
+            // 原逻辑没有判断 FINISHED，刚好在最后一步正常结束也会被误判为达到最大步骤：
+            // if (currentStep >= maxSteps) {
+            if (currentStep >= maxSteps && state != AgentState.FINISHED) {  
                 state = AgentState.FINISHED;  
                 results.add("Terminated: Reached max steps (" + maxSteps + ")");  
             }  
@@ -131,7 +133,9 @@ public abstract class BaseAgent {
                         emitter.send(result);
                     }
                     // 检查是否超出步骤限制
-                    if (currentStep >= maxSteps) {
+                    // 原逻辑没有判断 FINISHED，刚好在最后一步正常结束也会被误判为达到最大步骤：
+                    // if (currentStep >= maxSteps) {
+                    if (currentStep >= maxSteps && state != AgentState.FINISHED) {
                         state = AgentState.FINISHED;
                         emitter.send("执行结束: 达到最大步骤 (" + maxSteps + ")");
                     }

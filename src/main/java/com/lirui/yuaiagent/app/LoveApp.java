@@ -118,7 +118,7 @@ public class LoveApp {
                 // 应用增强检索服务（阿里云 PGVector）
                 //.advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))
 //                .advisors(LoveAppRagCustomAdvisorFactory.createLoveAppRagCustomAdvisor(
-//                        loveAppVectorStore, "cloud"
+//                        loveAppVectorStore, "已婚"
 //                ))
                 .call()
                 .chatResponse();

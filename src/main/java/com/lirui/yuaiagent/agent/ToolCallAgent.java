@@ -39,6 +39,9 @@ public class ToolCallAgent extends ReActAgent {
   
     // 禁用内置的工具调用机制，自己维护上下文  
     private final ChatOptions chatOptions;
+
+    // 未调用工具时，保存大模型直接生成的最终回复
+    private String noActionResult;
   
     public ToolCallAgent(ToolCallback[] availableTools) {  
         super();  
@@ -88,17 +91,27 @@ public class ToolCallAgent extends ReActAgent {
             if (toolCallList.isEmpty()) {
                 // 只有不调用工具时，才记录助手消息
                 getMessageList().add(assistantMessage);
+                noActionResult = result;
                 return false;
             } else {
+                noActionResult = null;
                 // 需要调用工具时，无需记录助手消息，因为调用工具时会自动记录
                 return true;
             }
         } catch (Exception e) {
             log.error(getName() + "的思考过程遇到了问题: " + e.getMessage());
-            getMessageList().add(
-                    new AssistantMessage("处理时遇到错误: " + e.getMessage()));
+            noActionResult = "处理时遇到错误: " + e.getMessage();
+            getMessageList().add(new AssistantMessage(noActionResult));
             return false;
         }
+    }
+
+    @Override
+    protected String getNoActionResult() {
+        if (noActionResult == null || noActionResult.isBlank()) {
+            return super.getNoActionResult();
+        }
+        return noActionResult;
     }
 
     /**

@@ -16,7 +16,7 @@ import java.util.List;
 @Slf4j
 class LoveAppDocumentLoader {
 
-    private final ResourcePatternResolver resourcePatternResolver;
+    private final ResourcePatternResolver resourcePatternResolver;//Spring提供的资源路径解析器
 
     LoveAppDocumentLoader(ResourcePatternResolver resourcePatternResolver) {
         this.resourcePatternResolver = resourcePatternResolver;
@@ -31,6 +31,7 @@ class LoveAppDocumentLoader {
                 String fileName = resource.getFilename();
                 // 提取文档倒数第 3 和第 2 个字作为标签
                 String status = fileName.substring(fileName.length() - 6, fileName.length() - 4);
+                //怎么把Markdown格式的文档转换成Document对象
                 MarkdownDocumentReaderConfig config = MarkdownDocumentReaderConfig.builder()
                         .withHorizontalRuleCreateDocument(true)
                         .withIncludeCodeBlock(false)

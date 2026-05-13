@@ -27,9 +27,10 @@ public class LoveAppVectorStoreConfig {
         SimpleVectorStore simpleVectorStore = SimpleVectorStore.builder(dashscopeEmbeddingModel)
                 .build();
         // 加载文档
+        // 暂时注释掉自动加载，避免启动时调用embedding API失败
         List<Document> documents = loveAppDocumentLoader.loadMarkdowns();
         // 自动补充关键词元信息,使用AI抽取关键字，速度变慢，费用变高
-        //List<Document> enrichedDocuments = myKeywordEnricher.enrichDocuments(documents);
+        // List<Document> enrichedDocuments = myKeywordEnricher.enrichDocuments(documents);
         simpleVectorStore.add(documents);
         return simpleVectorStore;
     }

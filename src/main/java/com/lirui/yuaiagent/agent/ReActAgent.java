@@ -1,5 +1,6 @@
 package com.lirui.yuaiagent.agent;
 
+import com.lirui.yuaiagent.agent.model.AgentState;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -24,6 +25,13 @@ public abstract class ReActAgent extends BaseAgent {
      * @return 行动执行结果  
      */  
     public abstract String act();  
+
+    /**
+     * 无需执行工具时返回给调用方的结果。
+     */
+    protected String getNoActionResult() {
+        return "思考完成 - 无需行动";
+    }
   
     /**  
      * 执行单个步骤：思考和行动  
@@ -35,7 +43,10 @@ public abstract class ReActAgent extends BaseAgent {
         try {  
             boolean shouldAct = think();  
             if (!shouldAct) {  
-                return "思考完成 - 无需行动";  
+                setState(AgentState.FINISHED);
+                // 原逻辑只返回固定文案，外层循环不会结束：
+                // return "思考完成 - 无需行动";
+                return getNoActionResult();
             }  
             return act();  
         } catch (Exception e) {  

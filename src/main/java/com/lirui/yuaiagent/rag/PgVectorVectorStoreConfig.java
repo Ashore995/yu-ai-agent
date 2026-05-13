@@ -1,18 +1,20 @@
-/*package com.lirui.yuaiagent.rag;
+package com.lirui.yuaiagent.rag;
 
 import jakarta.annotation.Resource;
-import org.springframework.ai.document.Document;
+import org.springframework.context.annotation.Configuration;
+/*import org.springframework.ai.document.Document;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.ai.vectorstore.pgvector.PgVectorStore;
 import org.springframework.context.annotation.Bean;
+
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
 
 import static org.springframework.ai.vectorstore.pgvector.PgVectorStore.PgDistanceType.COSINE_DISTANCE;
-import static org.springframework.ai.vectorstore.pgvector.PgVectorStore.PgIndexType.HNSW;
+import static org.springframework.ai.vectorstore.pgvector.PgVectorStore.PgIndexType.HNSW;*/
 
 @Configuration
 public class PgVectorVectorStoreConfig {
@@ -20,7 +22,7 @@ public class PgVectorVectorStoreConfig {
     @Resource
     private LoveAppDocumentLoader loveAppDocumentLoader;
 
-    //@Bean
+    /*@Bean
     public VectorStore pgVectorVectorStore(JdbcTemplate jdbcTemplate, EmbeddingModel dashscopeEmbeddingModel) {
         VectorStore vectorStore = PgVectorStore.builder(jdbcTemplate, dashscopeEmbeddingModel)
                 .dimensions(1536)                    // 不要盲目设置
@@ -35,5 +37,5 @@ public class PgVectorVectorStoreConfig {
         List<Document> documents = loveAppDocumentLoader.loadMarkdowns();
         vectorStore.add(documents);
         return vectorStore;
-    }
-}*/
+    }*/
+}

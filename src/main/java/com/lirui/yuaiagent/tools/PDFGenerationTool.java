@@ -12,6 +12,7 @@ import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 public class PDFGenerationTool {
 
@@ -20,7 +21,11 @@ public class PDFGenerationTool {
             @ToolParam(description = "Name of the file to save the generated PDF") String fileName,
             @ToolParam(description = "Content to be included in the PDF") String content) {
         String fileDir = FileConstant.FILE_SAVE_DIR + "/pdf";
-        String filePath = fileDir + "/" + fileName;
+        String safeFileName = Path.of(fileName).getFileName().toString();
+        if (!safeFileName.toLowerCase().endsWith(".pdf")) {
+            safeFileName += ".pdf";
+        }
+        String filePath = Path.of(fileDir, safeFileName).toString();
         try {
             // 创建目录
             FileUtil.mkdir(fileDir);
@@ -34,7 +39,7 @@ public class PDFGenerationTool {
 //                PdfFont font = PdfFontFactory.createFont(fontPath,
 //                        PdfFontFactory.EmbeddingStrategy.PREFER_EMBEDDED);
                 // 使用内置中文字体
-                PdfFont font = PdfFontFactory.createFont("STSongStd-Light", "UniGB-UCS2-H");
+                PdfFont font = PdfFontFactory.createFont("STSong-Light", "UniGB-UCS2-H");
                 document.setFont(font);
                 // 创建段落
                 Paragraph paragraph = new Paragraph(content);
