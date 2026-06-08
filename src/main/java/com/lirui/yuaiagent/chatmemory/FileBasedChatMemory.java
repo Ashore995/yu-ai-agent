@@ -39,9 +39,20 @@ public class FileBasedChatMemory implements ChatMemory {
 
     @Override
     public void add(String conversationId, List<Message> messages) {
+        // Spring AI ChatMemory 的追加语义：读取已有会话，再把本轮消息追加进去。
         List<Message> conversationMessages = getOrCreateConversation(conversationId);
         conversationMessages.addAll(messages);
         saveConversation(conversationId, conversationMessages);
+    }
+
+    public List<Message> getAll(String conversationId) {
+        // 分层压缩需要看到完整短期会话，不能只取 lastN。
+        return getOrCreateConversation(conversationId);
+    }
+
+    public void replace(String conversationId, List<Message> messages) {
+        // 上下文压缩后会用“摘要 + 最近消息”整体替换原短期窗口。
+        saveConversation(conversationId, new ArrayList<>(messages));
     }
 
     @Override

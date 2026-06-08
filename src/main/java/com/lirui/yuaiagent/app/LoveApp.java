@@ -2,17 +2,15 @@ package com.lirui.yuaiagent.app;
 
 import com.lirui.yuaiagent.advisor.MyLoggerAdvisor;
 import com.lirui.yuaiagent.advisor.ReReadingAdvisor;
-import com.lirui.yuaiagent.chatmemory.FileBasedChatMemory;
+import com.lirui.yuaiagent.chatmemory.LayeredMemoryAdvisor;
+import com.lirui.yuaiagent.chatmemory.LayeredMemoryManager;
 import com.lirui.yuaiagent.rag.LoveAppRagCustomAdvisorFactory;
 import com.lirui.yuaiagent.rag.QueryRewriter;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.client.advisor.api.Advisor;
-import org.springframework.ai.chat.memory.ChatMemory;
-import org.springframework.ai.chat.memory.InMemoryChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.tool.ToolCallback;
@@ -21,6 +19,7 @@ import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
+import java.nio.file.Paths;
 import java.util.List;
 
 import static org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor.CHAT_MEMORY_CONVERSATION_ID_KEY;
@@ -38,15 +37,14 @@ public class LoveApp {
             "引导用户详述事情经过、对方反应及自身想法，以便给出专属解决方案。";
 
     public LoveApp(ChatModel dashscopeChatModel) {
-        // 初始化基于内存的对话记忆
-        ChatMemory chatMemory = new InMemoryChatMemory();
-        // 初始化基于文件的对话记忆
-//        String fileDir = System.getProperty("user.dir") + "/chat-memory";
-//        ChatMemory chatMemory = new FileBasedChatMemory(fileDir);
+        // LoveApp 使用分层文件记忆：短期 Kryo 会话 + 长期 Markdown 话题 + transcript 冷日志。
+        LayeredMemoryManager memoryManager = new LayeredMemoryManager(
+                Paths.get(System.getProperty("user.dir"), "chat-memory"));
         chatClient = ChatClient.builder(dashscopeChatModel)
                 .defaultSystem(SYSTEM_PROMPT)
                 .defaultAdvisors(
-                        new MessageChatMemoryAdvisor(chatMemory),
+                        // 请求前注入分层记忆，响应后自动保存并按阈值压缩上下文。
+                        new LayeredMemoryAdvisor(memoryManager),
                         new MyLoggerAdvisor()
                         // 自定义推理增强 Advisor，可按需开启，代价是 token 会变多
                         //new ReReadingAdvisor()

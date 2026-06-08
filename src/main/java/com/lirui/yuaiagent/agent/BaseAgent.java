@@ -60,6 +60,8 @@ public abstract class BaseAgent {
         state = AgentState.RUNNING;  
         // 记录消息上下文  
         messageList.add(new UserMessage(userPrompt));
+        // YuManus 自己维护 messageList，不走 ChatMemory Advisor，所以每次写入后主动压缩。
+        compressMessageList();
         // 保存结果列表  
         List<String> results = new ArrayList<>();
         try {  
@@ -69,6 +71,8 @@ public abstract class BaseAgent {
                 log.info("Executing step " + stepNumber + "/" + maxSteps);  
                 // 单步执行  
                 String stepResult = step();  
+                // step 可能追加助手消息或工具结果，执行后再次压缩旧工具结果。
+                compressMessageList();
                 String result = "Step " + stepNumber + ": " + stepResult;  
                 results.add(result);  
             }  
@@ -118,6 +122,8 @@ public abstract class BaseAgent {
                 state = AgentState.RUNNING;
                 // 记录消息上下文
                 messageList.add(new UserMessage(userPrompt));
+                // 流式 Agent 同样需要控制自维护上下文大小。
+                compressMessageList();
 
                 try {
                     for (int i = 0; i < maxSteps && state != AgentState.FINISHED; i++) {
@@ -127,6 +133,8 @@ public abstract class BaseAgent {
 
                         // 单步执行
                         String stepResult = step();
+                        // 工具调用产生的 ToolResponseMessage 会在这里被微压缩。
+                        compressMessageList();
                         String result = "Step " + stepNumber + ": " + stepResult;
 
                         // 发送每一步的结果
@@ -191,4 +199,9 @@ public abstract class BaseAgent {
     protected void cleanup() {  
         // 子类可以重写此方法来清理资源  
     }  
+
+    protected void compressMessageList() {
+        // 默认实现使用 AgentContextCompressor；子类如需自定义压缩策略可以重写。
+        this.messageList = AgentContextCompressor.compress(this.messageList);
+    }
 }
