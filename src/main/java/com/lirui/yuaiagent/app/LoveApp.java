@@ -13,6 +13,7 @@ import org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.client.advisor.api.Advisor;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.vectorstore.VectorStore;
@@ -36,10 +37,11 @@ public class LoveApp {
             "恋爱状态询问沟通、习惯差异引发的矛盾；已婚状态询问家庭责任与亲属关系处理的问题。" +
             "引导用户详述事情经过、对方反应及自身想法，以便给出专属解决方案。";
 
-    public LoveApp(ChatModel dashscopeChatModel) {
-        // LoveApp 使用分层文件记忆：短期 Kryo 会话 + 长期 Markdown 话题 + transcript 冷日志。
+    public LoveApp(ChatModel dashscopeChatModel, EmbeddingModel dashscopeEmbeddingModel) {
+        // LoveApp 使用分层记忆：短期 Kryo 会话 + 向量语义召回 + transcript 冷日志。
         LayeredMemoryManager memoryManager = new LayeredMemoryManager(
-                Paths.get(System.getProperty("user.dir"), "chat-memory"));
+                Paths.get(System.getProperty("user.dir"), "chat-memory"),
+                dashscopeEmbeddingModel);
         chatClient = ChatClient.builder(dashscopeChatModel)
                 .defaultSystem(SYSTEM_PROMPT)
                 .defaultAdvisors(
